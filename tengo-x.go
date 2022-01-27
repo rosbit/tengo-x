@@ -35,6 +35,18 @@ func (tgw *TengoX) loadScript(script []byte, vars map[string]interface{}) (err e
 	return
 }
 
+func (tgw *TengoX) Run(vars map[string]interface{}) (err error) {
+	if tgw.compiled == nil {
+		err = fmt.Errorf("please load script first")
+		return
+	}
+	vs := convertEnv(vars)
+	for k, v := range vs {
+		tgw.compiled.Set(k, v)
+	}
+	return tgw.compiled.Run()
+}
+
 func (tgw *TengoX) GetGlobal(name string) (res interface{}, err error) {
 	res, err = tgw.getVar(name)
 	return
