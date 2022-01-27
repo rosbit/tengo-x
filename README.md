@@ -59,7 +59,7 @@ func main() {
   }
 
   ctx := js.NewTengo()
-  if err := ctx.LoadFile("b.tengo", vars); err != nil {
+  if err := ctx.LoadFile("a.tengo", vars); err != nil {
      fmt.Printf("%v\n", err)
      return
   }
@@ -73,13 +73,13 @@ func main() {
 }
 ```
 
-In Tengo code, one can call the registered name directly. There's the example `b.tengo`.
+In Tengo code, one can call the registered name directly. There's the example `a.tengo`.
 
 ```go
 fmt := import("fmt")
-r := adder(1, 100)   # the function "adder" is implemented in Go
+r := adder(1, 100)   // the function "adder" is implemented in Go
 fmt.println(r)
-fmt.println(m.name, " ", m.age) # m is an object
+fmt.println(m.name, " ", m.age) // m is an object
 ```
 
 ### Status
