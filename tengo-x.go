@@ -28,7 +28,8 @@ func (tgw *TengoX) LoadScript(script string, vars map[string]interface{}) (err e
 
 func (tgw *TengoX) loadScript(script []byte, vars map[string]interface{}) (err error) {
 	tgw.script = tengo.NewScript(script)
-	tgw.addVars(vars)
+	vs := convertEnv(vars)
+	tgw.addVars(vs)
 	mods := stdlib.AllModuleNames()
 	tgw.script.SetImports(stdlib.GetModuleMap(mods...))
 	tgw.compiled, err = tgw.script.Run()
@@ -40,11 +41,25 @@ func (tgw *TengoX) Run(vars map[string]interface{}) (err error) {
 		err = fmt.Errorf("please load script first")
 		return
 	}
-	vs := convertEnv(vars)
-	for k, v := range vs {
-		tgw.compiled.Set(k, v)
+	if len(vars) > 0 {
+		tgw.setVars(vars)
 	}
 	return tgw.compiled.Run()
+}
+
+func (tgw *TengoX) setVars(vars map[string]interface{}) {
+	recompileNeeded := false
+	vs := convertEnv(vars)
+	for k, v := range vs {
+		if err := tgw.compiled.Set(k, v); err != nil {
+			recompileNeeded = true
+			break
+		}
+	}
+	if recompileNeeded {
+		tgw.addVars(vs)
+		tgw.compiled, _ = tgw.script.Run()
+	}
 }
 
 func (tgw *TengoX) GetGlobal(name string) (res interface{}, err error) {
@@ -144,8 +159,7 @@ func (tgw *TengoX) SetModule(modName string, structVarPtr interface{}) (err erro
 	return
 }*/
 
-func (tgw *TengoX) addVars(vars map[string]interface{}) {
-	vs := convertEnv(vars)
+func (tgw *TengoX) addVars(vs map[string]tengo.Object) {
 	for k, v := range vs {
 		if err := tgw.script.Add(k, v); err != nil {
 			fmt.Printf("-- %v\n", err)
